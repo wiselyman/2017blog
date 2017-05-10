@@ -4,7 +4,11 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
 
 ### 1.安装swarm
 
+
+
 - 编辑三台机器的`/etc/hosts`文件，内容修改为：
+
+  ​
 
   ```shell
   192.168.1.130    manager.wisely.com   manager
@@ -16,6 +20,8 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
 
 - 每台机器安装docker，顺序执行下面命令
 
+  ​
+
   ```Shell
   yum update -y
   yum install docker
@@ -23,7 +29,11 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
   systemctl enable docker
   ```
 
+  ​
+
 - 每台机器开放下面防火墙端口，顺序执行下面命令：
+
+  ​
 
   ```shell
   firewall-cmd --permanent --add-port=2376/tcp
@@ -36,15 +46,23 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
   systemctl restart docker
   ```
 
+  ​
+
 - 在manager节点初始化集群：
+
+  ​
 
   ```shell
   docker swarm init --advertise-addr 192.168.1.130
   ```
 
+  ​
+
   执行后，得到下面结果：
 
-  ```
+  ​
+
+  ```shell
   Swarm initialized: current node (b0389cuqtk1h2v5vhj3a3xurz) is now a manager.
 
   To add a worker to this swarm, run the following command:
@@ -56,7 +74,11 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
   To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
   ```
 
+  ​
+
 - 在另外两个工作节点执行：
+
+  ​
 
   ```shell
   docker swarm join \
@@ -64,7 +86,11 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
       192.168.1.130:2377
   ```
 
+  ​
+
   输出为：
+
+  ​
 
   ```shell
   [root@localhost ~]# docker swarm join \
@@ -73,7 +99,11 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
   This node joined a swarm as a worker.
   ```
 
+  ​
+
 - 执行`docker node ls`查看集群信息:
+
+  ​
 
   ```Shell
   ID                           HOSTNAME            STATUS  AVAILABILITY  MANAGER STATUS
@@ -84,37 +114,52 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
 
   ​
 
-- 使用阿里云docker镜像加速
+- 使用阿里云docker镜像加速，按顺序执行，请去阿里云申请：
 
-  ```
+  ​
+
+  ```Shell
   sudo mkdir -p /etc/docker
 
   sudo tee /etc/docker/daemon.json <<-'EOF'
   {
-    "registry-mirrors": ["https://gj7l88s1.mirror.aliyuncs.com"]
+    "registry-mirrors": ["https://*.mirror.aliyuncs.com"]
   }
   EOF
 
   sudo systemctl daemon-reload
+
   sudo systemctl restart docker
   ```
 
+  ​
+
 - 部署测试，在管理节点执行：
 
-  ```
+  ​
+
+  ```shell
   docker service create -p 80:80 --name webserver --replicas 5 httpd
   ```
 
+  ​
+
   查看集群中的service`docker service ls`：
 
-  ```
+  ​
+
+  ```shell
   ID            NAME       REPLICAS  IMAGE  COMMAND
   7wk5kekwkyjd  webserver  5/5       httpd  
   ```
 
+  ​
+
   查看集群中的webserver服务`docker service ps webserver`:
 
-  ```
+  ​
+
+  ```shell
   ID                         NAME         IMAGE  NODE                DESIRED STATE  CURRENT STATE             ERROR
   5jq6c649y7kfdofhc8t4od7jc  webserver.1  httpd  node1.wisely.com    Running        Preparing 38 seconds ago  
   80ijfnq17p2h8dvipaabq3j4l  webserver.2  httpd  node1.wisely.com    Running        Preparing 38 seconds ago  
@@ -123,7 +168,11 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
   du0eoe5nn9dpcvqik0z4m2ros  webserver.5  httpd  node2.wisely.com    Running        Preparing 38 seconds ago  
   ```
 
+  ​
+
   访问http://192.168.1.130、http://192.168.1.131或http://192.168.1.132，结果为：
+
+  ​
 
   ![1](images/1.png)
 
@@ -131,8 +180,12 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
 
 - 首先关闭selinux，`setenforce 0`
 
+  ​
+
 
 - 在manager节点执行：
+
+  ​
 
   ```shell
   docker service create \
@@ -144,6 +197,10 @@ Docker swarm是集群下docker容器编排工具，本文讲解了安装swarm的
   -H unix:///var/run/docker.sock
   ```
 
+  ​
+
 - 访问http://192.168.1.130:9000
+
+  ​
 
   ![2](images/2.png)
